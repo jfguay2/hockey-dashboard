@@ -37,9 +37,6 @@ else:
     selected_team = st.sidebar.selectbox("Filter by Team", ["All Teams"] + list(teams))
     
     # Filter data based on selection
-    # To properly filter players by team, we need to know which team the player belongs to.
-    # The scraper gives Home_Team and Away_Team for the game, but the player belongs to one of them.
-    # For now, if a team is selected, we filter to games involving that team.
     if selected_team != "All Teams":
         df = df[(df['Home_Team'] == selected_team) | (df['Away_Team'] == selected_team)]
         st.subheader(f"Stats for games involving: {selected_team}")
@@ -68,21 +65,23 @@ else:
         st.markdown("**Top Goal Scorers**")
         top_goals = goals_df.groupby(['Player', 'Number']).size().reset_index(name='Goals')
         top_goals = top_goals.sort_values(by='Goals', ascending=False).head(10)
-        st.dataframe(top_goals, hide_index=True, use_container_width=True)
+        top_goals.set_index('Player', inplace=True)
+        st.table(top_goals)
         
     with col_assists:
         st.markdown("**Top Playmakers (Assists)**")
         top_assists = assists_df.groupby(['Player', 'Number']).size().reset_index(name='Assists')
         top_assists = top_assists.sort_values(by='Assists', ascending=False).head(10)
-        st.dataframe(top_assists, hide_index=True, use_container_width=True)
+        top_assists.set_index('Player', inplace=True)
+        st.table(top_assists)
         
     with col_points:
-        st.markdown("**Top Point Leaders (Goals + Assists)**")
-        # Combine goals and assists
+        st.markdown("**Top Point Leaders**")
         points_df = df[df['Type'].isin(['Goal', 'Assist'])]
         top_points = points_df.groupby(['Player', 'Number']).size().reset_index(name='Points')
         top_points = top_points.sort_values(by='Points', ascending=False).head(10)
-        st.dataframe(top_points, hide_index=True, use_container_width=True)
+        top_points.set_index('Player', inplace=True)
+        st.table(top_points)
 
     st.markdown("---")
     
@@ -97,7 +96,8 @@ else:
         st.markdown("**Most Penalized Players**")
         top_penalties = penalties_df.groupby(['Player', 'Number']).size().reset_index(name='Penalties')
         top_penalties = top_penalties.sort_values(by='Penalties', ascending=False).head(10)
-        st.dataframe(top_penalties, hide_index=True)
+        top_penalties.set_index('Player', inplace=True)
+        st.table(top_penalties)
         
     st.markdown("---")
     st.subheader("Raw Data Feed")
