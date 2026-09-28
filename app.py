@@ -26,9 +26,17 @@ df = load_data()
 if df.empty:
     st.warning("No data found. Please click 'Refresh Data' to pull the latest stats.")
 else:
-    # If the new 'Player_Team' column isn't in the CSV yet, the user needs to hit refresh
+    # Category Filter
+    categories = [c for c in df['Category'].unique() if pd.notna(c)]
+    categories.sort()
+    selected_category = st.sidebar.selectbox("Filter by Category / Age Group", ["All Categories"] + list(categories))
+    
+    if selected_category != "All Categories":
+        df = df[df['Category'] == selected_category]
+
+    # Team Filter
     if 'Player_Team' not in df.columns:
-        st.warning("⚠️ Scraper updated! Please click the 'Refresh Data from Spordle' button on the left to apply the new team filters.")
+        st.warning("⚠️ Please update your league_stats.csv file to apply specific team filters.")
     else:
         teams = [t for t in df['Player_Team'].unique() if pd.notna(t)]
         teams.sort()
@@ -37,9 +45,9 @@ else:
         
         if selected_team != "All Teams":
             df = df[df['Player_Team'] == selected_team]
-            st.subheader(f"Stats for: {selected_team}")
+            st.subheader(f"Stats for: {selected_team} ({selected_category})")
         else:
-            st.subheader("League Wide Stats")
+            st.subheader(f"League Wide Stats ({selected_category})")
 
         goals_df = df[df['Type'] == 'Goal']
         assists_df = df[df['Type'] == 'Assist']
@@ -87,5 +95,6 @@ else:
 
             st.markdown("**Most Penalized Players**")
             top_penalties = penalties_df.groupby(['Player', 'Number']).size().reset_index(name='Penalties').sort_values(by='Penalties', ascending=False).head(10)
-            top_penalties.set_index('Player', inplace=True)
-            st.table(top_penalties)
+            if not top_penalties.empty:
+                top_penalties.set_index('Player', inplace=True)
+                st.table(top_penalties)
