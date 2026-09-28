@@ -6,7 +6,28 @@ import os
 
 st.set_page_config(page_title="Spordle Hockey Stats Dashboard", layout="wide")
 st.title("🏒 Outaouais AA Regional Hockey Stats")
+# --- SECURITY CHECK ---
+def check_password():
+    def password_entered():
+        # YOU CAN CHANGE "hockey2026" TO WHATEVER PASSWORD YOU WANT
+        if st.session_state["password"] == "hockey2026":
+            st.session_state["password_correct"] = True
+            del st.session_state["password"] 
+        else:
+            st.session_state["password_correct"] = False
 
+    if "password_correct" not in st.session_state:
+        st.text_input("🔒 Please enter the team password to access the dashboard:", type="password", on_change=password_entered, key="password")
+        return False
+    elif not st.session_state["password_correct"]:
+        st.text_input("🔒 Please enter the team password to access the dashboard:", type="password", on_change=password_entered, key="password")
+        st.error("😕 Password incorrect. Please try again.")
+        return False
+    return True
+
+if not check_password():
+    st.stop() # Stops anyone without the password from seeing the rest of the page!
+# ----------------------
 @st.cache_data
 def load_data():
     if os.path.exists('league_stats.csv'):
