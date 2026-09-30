@@ -1,0 +1,38 @@
+name: Schedule Watchdog
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs at the top of every hour
+  workflow_dispatch: # Allows you to trigger it manually
+
+jobs:
+  check-schedule:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: pip install requests pytz ics
+        
+    - name: Run Watchdog
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: python watchdog.py
+      
+    - name: Commit and push schedule updates
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add previous_schedule.json royal_outaouais_u17.ics || true
+        git commit -m "Automated schedule update" || echo "No changes to commit"
+        git push
