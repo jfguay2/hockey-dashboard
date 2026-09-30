@@ -39,7 +39,10 @@ def get_lineups(game_id):
     url = f'https://pub-api.play.spordle.com/api/sp/games/{game_id}/lineups'
     r = requests.get(url, headers=HEADERS)
     if r.status_code == 200:
-        return r.json()
+        data = r.json()
+        # Protection : Si la réponse contient une erreur, on retourne un dictionnaire vide
+        if isinstance(data, dict) and 'error' not in data:
+            return data
     return {}
 
 def main():
@@ -73,10 +76,15 @@ def main():
         
         extracted = []
         
-        # 1. TÉLÉCHARGER L'ALIGNEMENT COMPLET (ROSTER) D'ABORD
+        # 1. TÉLÉCHARGER L'ALIGNEMENT (ROSTER) D'ABORD
         for t_id, players in lineups.items():
+            if not isinstance(players, list): continue # Protection supplémentaire
             player_team = get_team_name(t_id)
             for p in players:
+                # Ignorer les entraîneurs (qui n'ont généralement pas de numéro attribué)
+                if p.get('number') is None:
+                    continue
+                    
                 part = p.get('participant', {})
                 roster_data = {**game_info, 'Player_Team': player_team, 'Type': 'Roster', 'Period': '', 'Time': '', 'Player': part.get('fullName'), 'Number': p.get('number'), 'Infraction': ''}
                 extracted.append(roster_data)
