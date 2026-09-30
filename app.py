@@ -75,7 +75,7 @@ else:
                 st.subheader("Statistiques de la Ligue")
 
             if not df_team.empty:
-                # --- TABLEAU UNIFIÉ ---
+                # --- TABLEAU UNIFIÉ AVEC RANG ET NUMÉRO ---
                 st.markdown("**Statistiques Unifiées des Joueurs**")
                 
                 pivot_df = df_team.groupby(['Player', 'Number', 'Type']).size().unstack(fill_value=0).reset_index()
@@ -87,9 +87,15 @@ else:
                 pivot_df.rename(columns={'Goal': 'Buts', 'Assist': 'Passes', 'Penalty': 'Pénalités'}, inplace=True)
                 pivot_df['Points'] = pivot_df['Buts'] + pivot_df['Passes']
                 
+                # Réorganiser les colonnes
                 pivot_df = pivot_df[['Player', 'Number', 'Buts', 'Passes', 'Points', 'Pénalités']]
+                pivot_df.rename(columns={'Player': 'Joueur', 'Number': 'No'}, inplace=True)
                 pivot_df = pivot_df.sort_values(by=['Points', 'Buts'], ascending=False)
-                pivot_df.set_index('Player', inplace=True)
+                
+                # Ajouter le classement (Rang)
+                pivot_df['Rang'] = range(1, len(pivot_df) + 1)
+                pivot_df.set_index('Rang', inplace=True)
+                
                 st.table(pivot_df)
 
                 # --- STATS D'ÉQUIPE ---
@@ -161,14 +167,18 @@ else:
                             st.markdown("**⚠️ Menaces Offensives**")
                             pts = df_opp[df_opp['Type'].isin(['Goal', 'Assist'])].groupby(['Player', 'Number']).size().reset_index(name='Pts').sort_values(by='Pts', ascending=False).head(5)
                             if not pts.empty:
-                                pts.set_index('Player', inplace=True)
+                                pts.rename(columns={'Player': 'Joueur', 'Number': 'No'}, inplace=True)
+                                pts['Rang'] = range(1, len(pts) + 1)
+                                pts.set_index('Rang', inplace=True)
                                 st.table(pts)
                                 
                         with c2:
                             st.markdown("**⚖️ Indisciplinés**")
                             pens = opp_pens.groupby(['Player', 'Number']).size().reset_index(name='Pénalités').sort_values(by='Pénalités', ascending=False).head(5)
                             if not pens.empty:
-                                pens.set_index('Player', inplace=True)
+                                pens.rename(columns={'Player': 'Joueur', 'Number': 'No'}, inplace=True)
+                                pens['Rang'] = range(1, len(pens) + 1)
+                                pens.set_index('Rang', inplace=True)
                                 st.table(pens)
                                 
                         with c3:
