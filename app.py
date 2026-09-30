@@ -142,19 +142,41 @@ else:
                     st.table(pd.DataFrame(goalie_data))
 
     with tab2:
-        # --- SÉCURITÉ ONGLET SCOUT ---
-        def check_scout_password():
-            if st.session_state.get("scout_pw") == "Royal142":
+        # --- SÉCURITÉ ONGLET SCOUT (MULTI-USERS) ---
+        def check_scout_login():
+            if st.session_state.get("scout_logged_in"):
+                st.sidebar.success(f"👤 Coach connecté : {st.session_state['scout_username']}")
                 return True
-            pw = st.text_input("🔒 Mot de passe des entraîneurs (Scout) :", type="password", key="scout_pw_input")
-            if pw == "Royal142":
-                st.session_state["scout_pw"] = "Royal142"
-                st.rerun()
-            elif pw:
-                st.error("Mot de passe incorrect.")
+            
+            st.markdown("### 🔐 Portail des Entraîneurs")
+            col1, col2 = st.columns(2)
+            with col1:
+                user = st.text_input("Nom d'utilisateur :")
+            with col2:
+                pwd = st.text_input("Mot de passe :", type="password")
+                
+            # Dictionnaire des entraîneurs autorisés
+            valid_users = {
+                "JFG": "Royal142",
+                "Coach2": "Defense99",
+                "Admin": "Hockey2026"
+            }
+            
+            if st.button("Se connecter"):
+                if user in valid_users and valid_users[user] == pwd:
+                    st.session_state["scout_logged_in"] = True
+                    st.session_state["scout_username"] = user
+                    st.rerun()
+                else:
+                    st.error("Identifiants incorrects.")
             return False
 
-        if check_scout_password():
+        if check_scout_login():
+            import datetime
+            def log_ai_query(username, opponent):
+                with open("ai_scouting_logs.txt", "a", encoding="utf-8") as f:
+                    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    f.write(f"[{timestamp}] Coach: {username} a généré un rapport IA pour: {opponent}\n")
             st.header("📋 Rapport de Dépistage (Scouting Avancé)")
             
             if 'Player_Team' in df.columns:
@@ -183,12 +205,76 @@ else:
                             top_3_goals = opp_goals.groupby('Player').size().sort_values(ascending=False).head(3).sum()
                             dependency = (top_3_goals / total_goals) * 100
                             st.metric("Dépendance offensive au Top 3", f"{dependency:.1f}%", f"{top_3_goals} buts sur {total_goals} marqués par leurs 3 meilleurs buteurs", delta_color="inverse")
-                            if dependency > 60:
-                                st.warning("🎯 **Analyse Stratégique :** Cette équipe est très dépendante de ses vedettes. Neutralisez leur premier trio et leur attaque s'effondrera.")
-                            else:
-                                st.success("🎯 **Analyse Stratégique :** Attaque très équilibrée. Le danger vient de tous les trios, il faudra une défensive hermétique constante.")
+                            
+                            st.markdown("**Leurs principales menaces (Top 10) :**")
+                            opp_pts = df_opp[df_opp['Type'].isin(['Goal', 'Assist'])]
+                            if not opp_pts.empty:
+                                pts_df = opp_pts.groupby(['Player', 'Number', 'Type']).size().unstack(fill_value=0).reset_index()
+                                for col in ['Goal', 'Assist']:
+                                    if col not in pts_df.columns: pts_df[col] = 0
+                                pts_df['Points'] = pts_df['Goal'] + pts_df['Assist']
+                                pts_df.rename(columns={'Goal': 'Buts', 'Assist': 'Passes'}, inplace=True)
+                                pts_df['Joueur'] = pts_df.apply(format_name, axis=1)
+                                pts_df = pts_df[['Joueur', 'Buts', 'Passes', 'Points']].sort_values(by=['Points', 'Buts'], ascending=False).head(10)
+                                pts_df['Rang'] = range(1, len(pts_df) + 1)
+                                pts_df.set_index('Rang', inplace=True)
+                                st.table(pts_df)
+                            
+                                # Analyse dynamique
+                                top_player = pts_df.iloc[0]
+                                second_player_pts = pts_df.iloc[1]['Points'] if len(pts_df) > 1 else 0
+                                
+                                if top_player['Points'] >= (second_player_pts * 2) and top_player['Points'] >= 4:
+                                    st.error(f"🚨 **Analyse Stratégique :** Attention absolue à **{top_player['Joueur']}** ! Il génère seul une énorme portion de leur offensive. Ne lui donnez aucun espace sur la glace.")
+                                elif dependency > 60:
+                                    st.warning("🎯 **Analyse Stratégique :** Équipe très dépendante d'un noyau restreint de joueurs. Concentrez votre défensive sur leurs meilleurs compteurs pour freiner leur attaque.")
+                                elif dependency < 35 and len(pts_df) >= 5:
+                                    st.success("🛡️ **Analyse Stratégique :** Production offensive très bien répartie parmi plusieurs joueurs. Aucune cible unique à isoler, il faudra jouer un système défensif global.")
+                                else:
+                                    st.info("🎯 **Analyse Stratégique :** La production est dans la moyenne de la ligue. Gardez un œil attentif sur leurs meneurs offensifs.")
                         else:
                             st.info("L'équipe adverse n'a pas encore marqué de but cette saison.")
+                        
+                        # --- MOMENTUM ---
+                        st.markdown("---")
+                        st.subheader("🔥 Le Momentum (Leurs 60 dernières minutes)")
+                        opp_all_games = df[(df['Home_Team'] == opponent) | (df['Away_Team'] == opponent)][['Game_ID', 'Date']].drop_duplicates()
+                        if not opp_all_games.empty:
+                            opp_all_games['Date_DT'] = pd.to_datetime(opp_all_games['Date'])
+                            last_game_row = opp_all_games.sort_values(by='Date_DT', ascending=False).iloc[0]
+                            last_game_id = last_game_row['Game_ID']
+                            last_game_date = last_game_row['Date']
+                            last_game_opp_df = df_opp[df_opp['Game_ID'] == last_game_id]
+                            game_info = df[df['Game_ID'] == last_game_id].iloc[0]
+                            vs_team = game_info['Away_Team'] if game_info['Home_Team'] == opponent else game_info['Home_Team']
+                            last_game_goals = last_game_opp_df[last_game_opp_df['Type'] == 'Goal']
+                            goals_for = len(last_game_goals)
+                            goals_against = len(df[(df['Game_ID'] == last_game_id) & (df['Player_Team'] == vs_team) & (df['Type'] == 'Goal')])
+                            
+                            st.write(f"**Dernier match :** Joué le {last_game_date} contre **{vs_team}** (Score final: {opponent} {goals_for} - {goals_against} {vs_team})")
+                            
+                            if goals_for > 0:
+                                st.markdown("**Joueurs en feu (Points lors de ce match) :**")
+                                lg_pts = last_game_opp_df[last_game_opp_df['Type'].isin(['Goal', 'Assist'])]
+                                if not lg_pts.empty:
+                                    lg_pts_df = lg_pts.groupby(['Player', 'Number', 'Type']).size().unstack(fill_value=0).reset_index()
+                                    for col in ['Goal', 'Assist']:
+                                        if col not in lg_pts_df.columns: lg_pts_df[col] = 0
+                                    lg_pts_df['Points'] = lg_pts_df['Goal'] + lg_pts_df['Assist']
+                                    lg_pts_df['Joueur'] = lg_pts_df.apply(format_name, axis=1)
+                                    lg_pts_df = lg_pts_df[['Joueur', 'Goal', 'Assist', 'Points']].sort_values(by=['Points', 'Goal'], ascending=False).head(5)
+                                    lg_pts_df.rename(columns={'Goal': 'Buts', 'Assist': 'Passes'}, inplace=True)
+                                    lg_pts_df['Rang'] = range(1, len(lg_pts_df) + 1)
+                                    lg_pts_df.set_index('Rang', inplace=True)
+                                    st.table(lg_pts_df)
+                                    
+                                    top_hot = lg_pts_df.iloc[0]
+                                    if top_hot['Points'] >= 3:
+                                        st.warning(f"⚠️ **Attention :** {top_hot['Joueur']} a connu un match monstre récemment avec {top_hot['Points']} points. Il est en pleine confiance, surveillez-le de près.")
+                            else:
+                                st.info("Ils ont été blanchis lors de leur dernier match. Attendez-vous à une équipe désespérée de rebondir offensivement.")
+                        else:
+                            st.info("Aucun match enregistré pour cette équipe.")
                         
                         # 2. PROFIL D'INDISCIPLINE
                         st.markdown("---")
@@ -223,6 +309,61 @@ else:
                         else:
                             st.info("Aucun but accordé par cet adversaire jusqu'à présent.")
 
+                        # --- PERFORMANCE CONTRE LE TOP TIERS ---
+                        st.markdown("---")
+                        st.subheader("🏆 Performance contre les Puissances (Top 3)")
+                        
+                        # Calcul rapide du classement
+                        team_points = {t: 0 for t in teams}
+                        all_games = df['Game_ID'].unique()
+                        for gid in all_games:
+                            g_data = df[df['Game_ID'] == gid]
+                            if not g_data.empty:
+                                home_t = g_data.iloc[0]['Home_Team']
+                                away_t = g_data.iloc[0]['Away_Team']
+                                if home_t in teams and away_t in teams:
+                                    home_goals = len(g_data[(g_data['Player_Team'] == home_t) & (g_data['Type'] == 'Goal')])
+                                    away_goals = len(g_data[(g_data['Player_Team'] == away_t) & (g_data['Type'] == 'Goal')])
+                                    if home_goals > away_goals: team_points[home_t] += 2
+                                    elif away_goals > home_goals: team_points[away_t] += 2
+                                    else:
+                                        team_points[home_t] += 1
+                                        team_points[away_t] += 1
+                                        
+                        sorted_teams = sorted(team_points.items(), key=lambda x: x[1], reverse=True)
+                        top_tier_teams = [t[0] for t in sorted_teams[:3] if pd.notna(t[0])]
+                        
+                        top_tier_filtered = [t for t in top_tier_teams if t != opponent]
+                        
+                        if opponent in top_tier_teams:
+                            st.write(f"💡 *{opponent} fait lui-même partie du Top 3 de la ligue.*")
+                            
+                        if len(top_tier_filtered) > 0:
+                            opp_games_vs_top = df[((df['Home_Team'] == opponent) & (df['Away_Team'].isin(top_tier_filtered))) | 
+                                                  ((df['Away_Team'] == opponent) & (df['Home_Team'].isin(top_tier_filtered)))]['Game_ID'].unique()
+                            
+                            if len(opp_games_vs_top) == 0:
+                                st.info(f"Ils n'ont pas encore affronté les puissances de la ligue ({', '.join(top_tier_filtered)}).")
+                            else:
+                                w, l, t_tie = 0, 0, 0
+                                for gid in opp_games_vs_top:
+                                    g_data = df[df['Game_ID'] == gid]
+                                    gf = len(g_data[(g_data['Player_Team'] == opponent) & (g_data['Type'] == 'Goal')])
+                                    ga = len(g_data[(g_data['Player_Team'] != opponent) & (g_data['Type'] == 'Goal')])
+                                    if gf > ga: w += 1
+                                    elif ga > gf: l += 1
+                                    else: t_tie += 1
+                                
+                                st.write(f"**Fiche contre le Top Tier ({', '.join(top_tier_filtered)}) :** {w} Victoires - {l} Défaites - {t_tie} Nuls")
+                                
+                                win_pct = (w + (t_tie*0.5)) / len(opp_games_vs_top)
+                                if win_pct >= 0.55:
+                                    st.error("🚨 **Alerte :** Cette équipe hausse son niveau de jeu contre les gros clubs de la ligue. Prenez-les extrêmement au sérieux.")
+                                elif win_pct <= 0.35:
+                                    st.success("🎯 **Opportunité :** Ils s'écroulent contre les bonnes équipes. Un jeu rapide et intense en début de match pourrait les casser mentalement.")
+                                else:
+                                    st.info("Ils se maintiennent de façon moyenne contre les meilleures équipes.")
+
                         # 4. LA BÊTE NOIRE
                         st.markdown("---")
                         st.subheader(f"⚔️ 4. La Bête Noire (Historique contre {us_team})")
@@ -251,3 +392,24 @@ else:
                                 bete_noire['Rang'] = range(1, len(bete_noire) + 1)
                                 bete_noire.set_index('Rang', inplace=True)
                                 st.table(bete_noire)
+                        # --- ANTIGRAVITY AI SCOUTING ---
+                        st.markdown("---")
+                        st.subheader("🤖 Analyse Stratégique par IA (Antigravity)")
+                        if st.button("Générer le rapport IA détaillé pour " + opponent):
+                            log_ai_query(st.session_state['scout_username'], opponent)
+                            with st.spinner("L'IA Antigravity analyse les statistiques locales en direct..."):
+                                try:
+                                    import asyncio
+                                    from google.antigravity import Agent, LocalAgentConfig
+                                    
+                                    async def run_ai():
+                                        async with Agent(LocalAgentConfig()) as agent:
+                                            prompt = f"Tu es un entraîneur adjoint de hockey professionnel. Voici les stats de notre adversaire ({opponent}) :\n\n- Attaque:\n{df_opp[df_opp['Type'].isin(['Goal', 'Assist'])].to_dict()}\n\n- Pénalités:\n{df_opp[df_opp['Type'] == 'Penalty'].to_dict()}\n\nÉcris un rapport de dépistage ultra-percutant, liste les 3 joueurs clés à surveiller, et propose un plan de match pour les neutraliser."
+                                            response = await agent.chat(prompt)
+                                            return response.text
+                                            
+                                    ai_response = asyncio.run(run_ai())
+                                    st.success("Analyse générée avec succès !")
+                                    st.write(ai_response)
+                                except Exception as e:
+                                    st.error(f"Erreur de connexion à l'IA locale Antigravity : {e}")
