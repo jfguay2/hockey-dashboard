@@ -35,6 +35,13 @@ def get_box_score(game_id):
         return r.json()
     return None
 
+def get_lineups(game_id):
+    url = f'https://pub-api.play.spordle.com/api/sp/games/{game_id}/lineups'
+    r = requests.get(url, headers=HEADERS)
+    if r.status_code == 200:
+        return r.json()
+    return {}
+
 def main():
     games = get_all_games()
     played_games = [g for g in games if g.get("teamStats")]
@@ -46,13 +53,15 @@ def main():
         box_score = get_box_score(game_id)
         if not box_score:
             return []
+            
+        lineups = get_lineups(game_id)
         
         home_team_id = game.get('homeTeam', {}).get('id')
         home_team_name = game.get('homeTeam', {}).get('name', '')
         away_team_name = game.get('awayTeam', {}).get('name', '')
 
         def get_team_name(t_id):
-            return home_team_name if t_id == home_team_id else away_team_name
+            return home_team_name if str(t_id) == str(home_team_id) else away_team_name
 
         game_info = {
             'Game_ID': game_id,
@@ -63,6 +72,16 @@ def main():
         }
         
         extracted = []
+        
+        # 1. TÉLÉCHARGER L'ALIGNEMENT COMPLET (ROSTER) D'ABORD
+        for t_id, players in lineups.items():
+            player_team = get_team_name(t_id)
+            for p in players:
+                part = p.get('participant', {})
+                roster_data = {**game_info, 'Player_Team': player_team, 'Type': 'Roster', 'Period': '', 'Time': '', 'Player': part.get('fullName'), 'Number': p.get('number'), 'Infraction': ''}
+                extracted.append(roster_data)
+
+        # 2. TÉLÉCHARGER LES BUTS ET PASSES
         for g in box_score.get('goals', []):
             p = g.get('participant', {})
             player_team = get_team_name(g.get('teamId'))
@@ -73,6 +92,7 @@ def main():
                 assist_data = {**game_info, 'Player_Team': player_team, 'Type': 'Assist', 'Period': g.get('gameTime',{}).get('period'), 'Time': f"{g.get('gameTime',{}).get('minutes')}:{str(g.get('gameTime',{}).get('seconds')).zfill(2)}", 'Player': a.get('fullName'), 'Number': a.get('number'), 'Infraction': ''}
                 extracted.append(assist_data)
                 
+        # 3. TÉLÉCHARGER LES PÉNALITÉS
         for p in box_score.get('penalties', []):
             part = p.get('participant', {})
             player_team = get_team_name(p.get('teamId'))
