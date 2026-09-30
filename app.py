@@ -1,121 +1,117 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import subprocess
-import os
+import requests
+import json
+import urllib.parse
+import csv
+import concurrent.futures
 
-st.set_page_config(page_title="Spordle Hockey Stats Dashboard", layout="wide")
-st.title("🏒 Outaouais AA Regional Hockey Stats")
-# --- SECURITY CHECK ---
-def check_password():
-    def password_entered():
-        # YOU CAN CHANGE "hockey2026" TO WHATEVER PASSWORD YOU WANT
-        if st.session_state["password"] == "hockey2026":
-            st.session_state["password_correct"] = True
-            del st.session_state["password"] 
-        else:
-            st.session_state["password_correct"] = False
+HEADERS = {
+    'Authorization': 'API-Key f08ed9064e3cdc382e6abb305ff543d0150fb52f',
+    'x-page-type': 'ZONE',
+    'Referer': 'https://page.spordle.com/',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+}
 
-    if "password_correct" not in st.session_state:
-        st.text_input("🔒 Please enter the team password to access the dashboard:", type="password", on_change=password_entered, key="password")
-        return False
-    elif not st.session_state["password_correct"]:
-        st.text_input("🔒 Please enter the team password to access the dashboard:", type="password", on_change=password_entered, key="password")
-        st.error("😕 Password incorrect. Please try again.")
-        return False
-    return True
+def get_all_games():
+    filter_obj = {
+        "order": ["startTime ASC", "number ASC"],
+        "where": {
+            "and": [
+                {"date": {"between": ["2026-08-01", "2027-05-01"]}},
+                {"effectiveOffices": [6103]}
+            ]
+        },
+        "include": ["teamStats", "surface", "office", "category", "awayTeam", "homeTeam"]
+    }
+    url = 'https://pub-api.play.spordle.com/api/sp/games?filter=' + urllib.parse.quote(json.dumps(filter_obj))
+    r = requests.get(url, headers=HEADERS)
+    if r.status_code == 200:
+        return r.json()
+    return []
 
-if not check_password():
-    st.stop() # Stops anyone without the password from seeing the rest of the page!
-# ----------------------
-@st.cache_data
-def load_data():
-    if os.path.exists('league_stats.csv'):
-        return pd.read_csv('league_stats.csv')
-    return pd.DataFrame()
+def get_box_score(game_id):
+    url = f'https://pub-api.play.spordle.com/api/sp/games/{game_id}/boxScore'
+    r = requests.get(url, headers=HEADERS)
+    if r.status_code == 200:
+        return r.json()
+    return None
 
-st.sidebar.header("Dashboard Controls")
+def get_lineups(game_id):
+    url = f'https://pub-api.play.spordle.com/api/sp/games/{game_id}/lineups'
+    r = requests.get(url, headers=HEADERS)
+    if r.status_code == 200:
+        return r.json()
+    return {}
 
-if st.sidebar.button("🔄 Refresh Data from Spordle"):
-    with st.spinner("Fetching latest games and scoresheets..."):
-        subprocess.run(["python", "scraper.py"])
-        st.cache_data.clear()
-        st.success("Data refreshed successfully!")
+def main():
+    games = get_all_games()
+    played_games = [g for g in games if g.get("teamStats")]
 
-df = load_data()
-
-if df.empty:
-    st.warning("No data found. Please click 'Refresh Data' to pull the latest stats.")
-else:
-    # Category Filter
-    categories = [c for c in df['Category'].unique() if pd.notna(c)]
-    categories.sort()
-    selected_category = st.sidebar.selectbox("Filter by Category / Age Group", ["All Categories"] + list(categories))
+    all_data = []
     
-    if selected_category != "All Categories":
-        df = df[df['Category'] == selected_category]
-
-    # Team Filter
-    if 'Player_Team' not in df.columns:
-        st.warning("⚠️ Please update your league_stats.csv file to apply specific team filters.")
-    else:
-        teams = [t for t in df['Player_Team'].unique() if pd.notna(t)]
-        teams.sort()
-        
-        selected_team = st.sidebar.selectbox("Filter by Team", ["All Teams"] + list(teams))
-        
-        if selected_team != "All Teams":
-            df = df[df['Player_Team'] == selected_team]
-            st.subheader(f"Stats for: {selected_team} ({selected_category})")
-        else:
-            st.subheader(f"League Wide Stats ({selected_category})")
-
-        goals_df = df[df['Type'] == 'Goal']
-        assists_df = df[df['Type'] == 'Assist']
-        penalties_df = df[df['Type'] == 'Penalty']
-        
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total Goals", len(goals_df))
-        col2.metric("Total Assists", len(assists_df))
-        col3.metric("Total Points", len(goals_df) + len(assists_df))
-        col4.metric("Total Penalties", len(penalties_df))
-        
-        st.markdown("---")
-        st.subheader("🏆 Player Leaderboards")
-        
-        col_goals, col_assists, col_points = st.columns(3)
-        
-        with col_goals:
-            st.markdown("**Top Goal Scorers**")
-            top_goals = goals_df.groupby(['Player', 'Number']).size().reset_index(name='Goals').sort_values(by='Goals', ascending=False).head(10)
-            if not top_goals.empty:
-                top_goals.set_index('Player', inplace=True)
-                st.table(top_goals)
+    def fetch_game(game):
+        game_id = game['id']
+        box_score = get_box_score(game_id)
+        if not box_score:
+            return []
             
-        with col_assists:
-            st.markdown("**Top Playmakers (Assists)**")
-            top_assists = assists_df.groupby(['Player', 'Number']).size().reset_index(name='Assists').sort_values(by='Assists', ascending=False).head(10)
-            if not top_assists.empty:
-                top_assists.set_index('Player', inplace=True)
-                st.table(top_assists)
+        lineups = get_lineups(game_id)
+        
+        home_team_id = game.get('homeTeam', {}).get('id')
+        home_team_name = game.get('homeTeam', {}).get('name', '')
+        away_team_name = game.get('awayTeam', {}).get('name', '')
+
+        def get_team_name(t_id):
+            return home_team_name if str(t_id) == str(home_team_id) else away_team_name
+
+        game_info = {
+            'Game_ID': game_id,
+            'Date': game.get('date'),
+            'Category': game.get('category', {}).get('name', ''),
+            'Home_Team': home_team_name,
+            'Away_Team': away_team_name
+        }
+        
+        extracted = []
+        
+        # 1. TÉLÉCHARGER L'ALIGNEMENT COMPLET (ROSTER) D'ABORD
+        for t_id, players in lineups.items():
+            player_team = get_team_name(t_id)
+            for p in players:
+                part = p.get('participant', {})
+                roster_data = {**game_info, 'Player_Team': player_team, 'Type': 'Roster', 'Period': '', 'Time': '', 'Player': part.get('fullName'), 'Number': p.get('number'), 'Infraction': ''}
+                extracted.append(roster_data)
+
+        # 2. TÉLÉCHARGER LES BUTS ET PASSES
+        for g in box_score.get('goals', []):
+            p = g.get('participant', {})
+            player_team = get_team_name(g.get('teamId'))
+            goal_data = {**game_info, 'Player_Team': player_team, 'Type': 'Goal', 'Period': g.get('gameTime',{}).get('period'), 'Time': f"{g.get('gameTime',{}).get('minutes')}:{str(g.get('gameTime',{}).get('seconds')).zfill(2)}", 'Player': p.get('fullName'), 'Number': p.get('number'), 'Infraction': ''}
+            extracted.append(goal_data)
             
-        with col_points:
-            st.markdown("**Top Point Leaders**")
-            points_df = df[df['Type'].isin(['Goal', 'Assist'])]
-            top_points = points_df.groupby(['Player', 'Number']).size().reset_index(name='Points').sort_values(by='Points', ascending=False).head(10)
-            if not top_points.empty:
-                top_points.set_index('Player', inplace=True)
-                st.table(top_points)
+            for a in g.get('assists', []):
+                assist_data = {**game_info, 'Player_Team': player_team, 'Type': 'Assist', 'Period': g.get('gameTime',{}).get('period'), 'Time': f"{g.get('gameTime',{}).get('minutes')}:{str(g.get('gameTime',{}).get('seconds')).zfill(2)}", 'Player': a.get('fullName'), 'Number': a.get('number'), 'Infraction': ''}
+                extracted.append(assist_data)
+                
+        # 3. TÉLÉCHARGER LES PÉNALITÉS
+        for p in box_score.get('penalties', []):
+            part = p.get('participant', {})
+            player_team = get_team_name(p.get('teamId'))
+            pen_data = {**game_info, 'Player_Team': player_team, 'Type': 'Penalty', 'Period': p.get('gameTime',{}).get('period'), 'Time': f"{p.get('gameTime',{}).get('minutes')}:{str(p.get('gameTime',{}).get('seconds')).zfill(2)}", 'Player': part.get('fullName'), 'Number': part.get('number'), 'Infraction': p.get('infraction')}
+            extracted.append(pen_data)
+            
+        return extracted
 
-        st.markdown("---")
-        st.subheader("📈 Penalty Breakdown")
-        if not penalties_df.empty:
-            penalty_counts = penalties_df['Infraction'].value_counts().reset_index()
-            penalty_counts.columns = ['Infraction', 'Count']
-            st.plotly_chart(px.pie(penalty_counts, values='Count', names='Infraction', title="Types of Penalties Called"), use_container_width=True)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        results = list(executor.map(fetch_game, played_games))
+        
+    for res in results:
+        all_data.extend(res)
+            
+    if all_data:
+        with open('league_stats.csv', 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=['Game_ID', 'Date', 'Category', 'Home_Team', 'Away_Team', 'Player_Team', 'Type', 'Period', 'Time', 'Player', 'Number', 'Infraction'])
+            writer.writeheader()
+            writer.writerows(all_data)
 
-            st.markdown("**Most Penalized Players**")
-            top_penalties = penalties_df.groupby(['Player', 'Number']).size().reset_index(name='Penalties').sort_values(by='Penalties', ascending=False).head(10)
-            if not top_penalties.empty:
-                top_penalties.set_index('Player', inplace=True)
-                st.table(top_penalties)
+if __name__ == "__main__":
+    main()
