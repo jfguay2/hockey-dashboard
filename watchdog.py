@@ -27,7 +27,8 @@ def fetch_schedule():
                 {"effectiveOffices": [6103]}
             ]
         },
-        "include": ["surface", "category", "awayTeam", "homeTeam", "status"]
+        # CORRECTION : Retrait de "status" qui causait un bug chez Spordle
+        "include": ["surface", "category", "awayTeam", "homeTeam"]
     }
     url = 'https://pub-api.play.spordle.com/api/sp/games?filter=' + urllib.parse.quote(json.dumps(filter_obj))
     r = requests.get(url, headers=HEADERS)
@@ -35,9 +36,9 @@ def fetch_schedule():
     
     target_games = {}
     for g in games:
-        home = g.get('homeTeam', {}).get('name', '')
-        away = g.get('awayTeam', {}).get('name', '')
-        cat = g.get('category', {}).get('name', '')
+        home = g.get('homeTeam', {}).get('name', '') or ''
+        away = g.get('awayTeam', {}).get('name', '') or ''
+        cat = g.get('category', {}).get('name', '') or ''
         
         # Isolate U17 AA Royal Outaouais
         if (TEAM_NAME in home or TEAM_NAME in away) and cat == CATEGORY:
@@ -47,7 +48,7 @@ def fetch_schedule():
                 'date': g.get('date'),
                 'home': home,
                 'away': away,
-                'location': g.get('surface', {}).get('name', 'TBD'),
+                'location': g.get('surface', {}).get('name', 'À déterminer'),
                 'status': g.get('status', 'Scheduled')
             }
     return target_games
@@ -61,7 +62,7 @@ def format_time(dt_str):
     try:
         dt = datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
         est = pytz.timezone('America/Toronto')
-        return dt.astimezone(est).strftime('%b %d, %Y at %I:%M %p')
+        return dt.astimezone(est).strftime('%b %d, %Y à %H:%M')
     except:
         return dt_str
 
@@ -78,27 +79,27 @@ def main():
         changes = []
         for g_id, curr_g in current_schedule.items():
             if g_id not in previous_schedule:
-                changes.append(f"🟢 *NEW GAME ADDED*\n{curr_g['home']} vs {curr_g['away']}\nTime: {format_time(curr_g['date'])}\nArena: {curr_g['location']}")
+                changes.append(f"🏒 *NOUVEAU MATCH AJOUTÉ*\n{curr_g['home']} vs {curr_g['away']}\nHeure: {format_time(curr_g['date'])}\nAréna: {curr_g['location']}")
             else:
                 prev_g = previous_schedule[g_id]
                 mods = []
                 if curr_g['date'] != prev_g['date']:
-                    mods.append(f"Time changed to {format_time(curr_g['date'])}")
+                    mods.append(f"Heure changée pour {format_time(curr_g['date'])}")
                 if curr_g['location'] != prev_g['location']:
-                    mods.append(f"Arena changed to {curr_g['location']}")
+                    mods.append(f"Aréna changé pour {curr_g['location']}")
                 if curr_g['status'] != prev_g['status']:
-                    mods.append(f"Status changed to {curr_g['status']}")
+                    mods.append(f"Statut changé pour {curr_g['status']}")
                 if mods:
-                    changes.append(f"🟡 *GAME UPDATED*\n{curr_g['home']} vs {curr_g['away']}\n" + "\n".join(f"- {m}" for m in mods))
+                    changes.append(f"⚠️ *MATCH MODIFIÉ*\n{curr_g['home']} vs {curr_g['away']}\n" + "\n".join(f"- {m}" for m in mods))
                     
         for g_id, prev_g in previous_schedule.items():
             if g_id not in current_schedule:
-                changes.append(f"🔴 *GAME CANCELLED*\n{prev_g['home']} vs {prev_g['away']}\nOriginally: {format_time(prev_g['date'])}")
+                changes.append(f"❌ *MATCH ANNULÉ*\n{prev_g['home']} vs {prev_g['away']}\nOriginalement prévu le: {format_time(prev_g['date'])}")
 
         if changes:
-            send_telegram("🏒 *Spordle Schedule Update (U17 AA)* 🏒\n\n" + "\n\n".join(changes))
+            send_telegram("🚨 *Mise à jour de l'horaire (M17 AA)* 🚨\n\n" + "\n\n".join(changes))
     else:
-        send_telegram("🏒 *Schedule Watchdog Initialized*\nTracking U17 AA Royal Outaouais schedule. You will be alerted here if anything changes!")
+        send_telegram("✅ *Surveillance de l'horaire activée*\nJe surveille l'horaire du Royal Outaouais M17 AA. Vous serez alerté ici si quoi que ce soit change !")
 
     # Save memory
     with open('previous_schedule.json', 'w', encoding='utf-8') as f:
