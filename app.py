@@ -35,15 +35,6 @@ def load_data():
         return pd.read_csv('league_stats.csv')
     return pd.DataFrame()
 
-# Formateur de nom "Joueur #Numéro"
-def format_name(row):
-    try:
-        if pd.notna(row['Number']) and str(row['Number']).strip() != '':
-            return f"{row['Player']} #{int(float(row['Number']))}"
-    except:
-        pass
-    return str(row['Player'])
-
 st.sidebar.header("Commandes")
 
 if st.sidebar.button("🔄 Rafraîchir les données"):
@@ -87,24 +78,18 @@ else:
                 # --- TABLEAU UNIFIÉ ---
                 st.markdown("**Statistiques Unifiées des Joueurs**")
                 
-                pivot_df = df_team.groupby(['Player', 'Number', 'Type']).size().unstack(fill_value=0).reset_index()
+                pivot_df = df_team.groupby(['Player', 'Number', 'Player_Team', 'Type']).size().unstack(fill_value=0).reset_index()
                 
                 for col in ['Goal', 'Assist', 'Penalty']:
                     if col not in pivot_df.columns:
                         pivot_df[col] = 0
                         
-                pivot_df.rename(columns={'Goal': 'Buts', 'Assist': 'Passes', 'Penalty': 'Pénalités'}, inplace=True)
+                pivot_df.rename(columns={'Goal': 'Buts', 'Assist': 'Passes', 'Penalty': 'Pénalités', 'Player_Team': 'Équipe'}, inplace=True)
                 pivot_df['Points'] = pivot_df['Buts'] + pivot_df['Passes']
                 
-                # Appliquer le format "Nom #Numéro"
-                pivot_df['Joueur'] = pivot_df.apply(format_name, axis=1)
-                
-                pivot_df = pivot_df[['Joueur', 'Buts', 'Passes', 'Points', 'Pénalités']]
+                pivot_df = pivot_df[['Player', 'Number', 'Équipe', 'Buts', 'Passes', 'Points', 'Pénalités']]
                 pivot_df = pivot_df.sort_values(by=['Points', 'Buts'], ascending=False)
-                
-                pivot_df['Rang'] = range(1, len(pivot_df) + 1)
-                pivot_df.set_index('Rang', inplace=True)
-                
+                pivot_df.set_index('Player', inplace=True)
                 st.table(pivot_df)
 
                 # --- STATS D'ÉQUIPE ---
@@ -155,99 +140,43 @@ else:
             return False
 
         if check_scout_password():
-            st.header("📋 Rapport de Dépistage (Scouting Avancé)")
+            st.header("📋 Rapport de Dépistage d'Avant-Match")
+            st.markdown("Sélectionnez le **prochain adversaire**.")
             
             if 'Player_Team' in df.columns:
                 teams = [t for t in df['Player_Team'].unique() if pd.notna(t)]
                 teams.sort()
-                
-                col_us, col_them = st.columns(2)
-                with col_us:
-                    us_team = st.selectbox("Notre Équipe", ["ROYAL OUTAOUAIS"] + [t for t in teams if t != "ROYAL OUTAOUAIS"])
-                with col_them:
-                    opponent = st.selectbox("Prochain Adversaire", ["Sélectionnez une équipe..."] + [t for t in teams if t != us_team])
+                opponent = st.selectbox("Prochain Adversaire", ["Sélectionnez une équipe..."] + list(teams))
                 
                 if opponent != "Sélectionnez une équipe...":
                     df_opp = df[df['Player_Team'] == opponent]
-                    
                     if df_opp.empty:
-                        st.info(f"Aucune donnée pour {opponent} jusqu'à présent.")
+                        st.info(f"Aucune donnée pour {opponent}.")
                     else:
-                        st.markdown("---")
-                        
-                        # 1. PROFONDEUR OFFENSIVE
-                        st.subheader("📊 1. Profondeur Offensive (Dépendance)")
+                        c1, c2, c3 = st.columns(3)
                         opp_goals = df_opp[df_opp['Type'] == 'Goal']
-                        total_goals = len(opp_goals)
-                        if total_goals > 0:
-                            top_3_goals = opp_goals.groupby('Player').size().sort_values(ascending=False).head(3).sum()
-                            dependency = (top_3_goals / total_goals) * 100
-                            st.metric("Dépendance offensive au Top 3", f"{dependency:.1f}%", f"{top_3_goals} buts sur {total_goals} marqués par leurs 3 meilleurs buteurs", delta_color="inverse")
-                            if dependency > 60:
-                                st.warning("🎯 **Analyse Stratégique :** Cette équipe est très dépendante de ses vedettes. Neutralisez leur premier trio et leur attaque s'effondrera.")
-                            else:
-                                st.success("🎯 **Analyse Stratégique :** Attaque très équilibrée. Le danger vient de tous les trios, il faudra une défensive hermétique constante.")
-                        else:
-                            st.info("L'équipe adverse n'a pas encore marqué de but cette saison.")
-                        
-                        # 2. PROFIL D'INDISCIPLINE
-                        st.markdown("---")
-                        st.subheader("⚖️ 2. Le Profil d'Indiscipline")
                         opp_pens = df_opp[df_opp['Type'] == 'Penalty']
-                        if not opp_pens.empty:
-                            profil_pens = opp_pens.groupby(['Player', 'Number', 'Infraction']).size().reset_index(name='Compte').sort_values(by=['Compte', 'Player'], ascending=[False, True])
-                            profil_pens['Joueur'] = profil_pens.apply(format_name, axis=1)
-                            profil_pens = profil_pens[['Joueur', 'Infraction', 'Compte']]
-                            profil_pens['Rang'] = range(1, len(profil_pens) + 1)
-                            profil_pens.set_index('Rang', inplace=True)
-                            st.table(profil_pens.head(10))
-                        else:
-                            st.info("Équipe très disciplinée, aucune pénalité enregistrée.")
-
-                        # 3. VULNÉRABILITÉ DÉFENSIVE
-                        st.markdown("---")
-                        st.subheader("🚨 3. Vulnérabilité Défensive (Buts Accordés)")
-                        opp_games = df[(df['Home_Team'] == opponent) | (df['Away_Team'] == opponent)]['Game_ID'].unique()
-                        goals_against = df[(df['Game_ID'].isin(opp_games)) & (df['Player_Team'] != opponent) & (df['Type'] == 'Goal')]
                         
-                        if not goals_against.empty:
-                            vuln_counts = goals_against['Period'].value_counts().reset_index()
-                            vuln_counts.columns = ['Période', 'Buts Accordés']
-                            vuln_counts['Période'] = vuln_counts['Période'].astype(str)
-                            vuln_counts = vuln_counts.sort_values(by='Période')
-                            vuln_counts.set_index('Période', inplace=True)
-                            st.table(vuln_counts)
-                            
-                            worst_period = vuln_counts.idxmax()['Buts Accordés']
-                            st.info(f"💡 **À noter :** Ils ont tendance à accorder le plus de buts en **Période {worst_period}**.")
-                        else:
-                            st.info("Aucun but accordé par cet adversaire jusqu'à présent.")
-
-                        # 4. LA BÊTE NOIRE
-                        st.markdown("---")
-                        st.subheader(f"⚔️ 4. La Bête Noire (Historique contre {us_team})")
-                        h2h_games = df[
-                            ((df['Home_Team'] == us_team) & (df['Away_Team'] == opponent)) | 
-                            ((df['Home_Team'] == opponent) & (df['Away_Team'] == us_team))
-                        ]['Game_ID'].unique()
-                        
-                        if len(h2h_games) == 0:
-                            st.info(f"Aucun affrontement préalable entre {opponent} et {us_team} dans la base de données actuelle.")
-                        else:
-                            h2h_opp_pts = df[(df['Game_ID'].isin(h2h_games)) & (df['Player_Team'] == opponent) & (df['Type'].isin(['Goal', 'Assist']))]
-                            if h2h_opp_pts.empty:
-                                st.success(f"Magnifique ! Aucun joueur de {opponent} n'a réussi à récolter de point contre vous cette saison.")
-                            else:
-                                bete_noire = h2h_opp_pts.groupby(['Player', 'Number', 'Type']).size().unstack(fill_value=0).reset_index()
-                                for col in ['Goal', 'Assist']:
-                                    if col not in bete_noire.columns: bete_noire[col] = 0
-                                bete_noire['Points Contre Nous'] = bete_noire['Goal'] + bete_noire['Assist']
-                                bete_noire.rename(columns={'Goal': 'Buts', 'Assist': 'Passes'}, inplace=True)
+                        with c1:
+                            st.markdown("**⚠️ Menaces Offensives**")
+                            pts = df_opp[df_opp['Type'].isin(['Goal', 'Assist'])].groupby(['Player', 'Number']).size().reset_index(name='Pts').sort_values(by='Pts', ascending=False).head(5)
+                            if not pts.empty:
+                                pts.set_index('Player', inplace=True)
+                                st.table(pts)
                                 
-                                bete_noire['Joueur'] = bete_noire.apply(format_name, axis=1)
-                                bete_noire = bete_noire[['Joueur', 'Buts', 'Passes', 'Points Contre Nous']]
+                        with c2:
+                            st.markdown("**⚖️ Indisciplinés**")
+                            pens = opp_pens.groupby(['Player', 'Number']).size().reset_index(name='Pénalités').sort_values(by='Pénalités', ascending=False).head(5)
+                            if not pens.empty:
+                                pens.set_index('Player', inplace=True)
+                                st.table(pens)
                                 
-                                bete_noire = bete_noire.sort_values(by='Points Contre Nous', ascending=False).head(5)
-                                bete_noire['Rang'] = range(1, len(bete_noire) + 1)
-                                bete_noire.set_index('Rang', inplace=True)
-                                st.table(bete_noire)
+                        with c3:
+                            st.markdown("**⏱️ Buts par Période**")
+                            if not opp_goals.empty:
+                                per_counts = opp_goals['Period'].value_counts().reset_index()
+                                per_counts.columns = ['Période', 'Buts']
+                                per_counts['Période'] = per_counts['Période'].astype(str)
+                                per_counts = per_counts.sort_values(by='Période')
+                                per_counts.set_index('Période', inplace=True)
+                                st.table(per_counts)
