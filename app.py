@@ -35,6 +35,15 @@ def load_data():
         return pd.read_csv('league_stats.csv')
     return pd.DataFrame()
 
+# Formateur de nom "Joueur #Numéro"
+def format_name(row):
+    try:
+        if pd.notna(row['Number']) and str(row['Number']).strip() != '':
+            return f"{row['Player']} #{int(float(row['Number']))}"
+    except:
+        pass
+    return str(row['Player'])
+
 st.sidebar.header("Commandes")
 
 if st.sidebar.button("🔄 Rafraîchir les données"):
@@ -75,7 +84,7 @@ else:
                 st.subheader("Statistiques de la Ligue")
 
             if not df_team.empty:
-                # --- TABLEAU UNIFIÉ AVEC RANG ET NUMÉRO ---
+                # --- TABLEAU UNIFIÉ ---
                 st.markdown("**Statistiques Unifiées des Joueurs**")
                 
                 pivot_df = df_team.groupby(['Player', 'Number', 'Type']).size().unstack(fill_value=0).reset_index()
@@ -87,8 +96,10 @@ else:
                 pivot_df.rename(columns={'Goal': 'Buts', 'Assist': 'Passes', 'Penalty': 'Pénalités'}, inplace=True)
                 pivot_df['Points'] = pivot_df['Buts'] + pivot_df['Passes']
                 
-                pivot_df = pivot_df[['Player', 'Number', 'Buts', 'Passes', 'Points', 'Pénalités']]
-                pivot_df.rename(columns={'Player': 'Joueur', 'Number': 'No'}, inplace=True)
+                # Appliquer le format "Nom #Numéro"
+                pivot_df['Joueur'] = pivot_df.apply(format_name, axis=1)
+                
+                pivot_df = pivot_df[['Joueur', 'Buts', 'Passes', 'Points', 'Pénalités']]
                 pivot_df = pivot_df.sort_values(by=['Points', 'Buts'], ascending=False)
                 
                 pivot_df['Rang'] = range(1, len(pivot_df) + 1)
@@ -185,7 +196,8 @@ else:
                         opp_pens = df_opp[df_opp['Type'] == 'Penalty']
                         if not opp_pens.empty:
                             profil_pens = opp_pens.groupby(['Player', 'Number', 'Infraction']).size().reset_index(name='Compte').sort_values(by=['Compte', 'Player'], ascending=[False, True])
-                            profil_pens.rename(columns={'Player': 'Joueur', 'Number': 'No'}, inplace=True)
+                            profil_pens['Joueur'] = profil_pens.apply(format_name, axis=1)
+                            profil_pens = profil_pens[['Joueur', 'Infraction', 'Compte']]
                             profil_pens['Rang'] = range(1, len(profil_pens) + 1)
                             profil_pens.set_index('Rang', inplace=True)
                             st.table(profil_pens.head(10))
@@ -230,8 +242,11 @@ else:
                                 for col in ['Goal', 'Assist']:
                                     if col not in bete_noire.columns: bete_noire[col] = 0
                                 bete_noire['Points Contre Nous'] = bete_noire['Goal'] + bete_noire['Assist']
-                                bete_noire.rename(columns={'Player': 'Joueur', 'Number': 'No', 'Goal': 'Buts', 'Assist': 'Passes'}, inplace=True)
-                                bete_noire = bete_noire[['Joueur', 'No', 'Buts', 'Passes', 'Points Contre Nous']]
+                                bete_noire.rename(columns={'Goal': 'Buts', 'Assist': 'Passes'}, inplace=True)
+                                
+                                bete_noire['Joueur'] = bete_noire.apply(format_name, axis=1)
+                                bete_noire = bete_noire[['Joueur', 'Buts', 'Passes', 'Points Contre Nous']]
+                                
                                 bete_noire = bete_noire.sort_values(by='Points Contre Nous', ascending=False).head(5)
                                 bete_noire['Rang'] = range(1, len(bete_noire) + 1)
                                 bete_noire.set_index('Rang', inplace=True)
