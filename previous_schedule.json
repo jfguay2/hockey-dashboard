@@ -1,7 +1,7 @@
 {
   "914584": {
     "id": "914584",
-    "date": "2026-09-22",
+    "date": "2026-09-23T00:00:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "OLYMPIQUES OUTAOUAIS",
     "location": "Glace 1",
@@ -9,7 +9,7 @@
   },
   "925478": {
     "id": "925478",
-    "date": "2026-09-27",
+    "date": "2026-09-27T18:30:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "GRIZZLYS DES MOULINS",
     "location": "Slush Puppie",
@@ -17,7 +17,7 @@
   },
   "925486": {
     "id": "925486",
-    "date": "2026-10-03",
+    "date": "2026-10-03T19:00:00.000Z",
     "home": "GRIZZLYS DES MOULINS",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -25,7 +25,7 @@
   },
   "925491": {
     "id": "925491",
-    "date": "2026-10-04",
+    "date": "2026-10-04T14:15:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "CONCORDES MIRABEL-LACHUTE",
     "location": "Kruger",
@@ -33,7 +33,7 @@
   },
   "925507": {
     "id": "925507",
-    "date": "2026-10-11",
+    "date": "2026-10-11T18:30:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "PIRATES",
     "location": "Glace 1",
@@ -41,7 +41,7 @@
   },
   "925515": {
     "id": "925515",
-    "date": "2026-10-17",
+    "date": "2026-10-17T19:30:00.000Z",
     "home": "S\u00c9NATEURS LAVAL",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 3",
@@ -49,7 +49,7 @@
   },
   "925520": {
     "id": "925520",
-    "date": "2026-10-17",
+    "date": "2026-10-18T00:45:00.000Z",
     "home": "ARMADA JR AA 1",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -57,7 +57,7 @@
   },
   "925525": {
     "id": "925525",
-    "date": "2026-10-18",
+    "date": "2026-10-18T20:45:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "MARQUIS LAVAL",
     "location": "Kruger",
@@ -65,7 +65,7 @@
   },
   "925538": {
     "id": "925538",
-    "date": "2026-10-25",
+    "date": "2026-10-25T17:45:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "PANTHERES DEUX-MONTAGNES",
     "location": "Kruger",
@@ -73,7 +73,7 @@
   },
   "925542": {
     "id": "925542",
-    "date": "2026-10-31",
+    "date": "2026-10-31T17:00:00.000Z",
     "home": "MONTAGNARDS",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -81,7 +81,7 @@
   },
   "925549": {
     "id": "925549",
-    "date": "2026-10-31",
+    "date": "2026-10-31T22:00:00.000Z",
     "home": "LIONS ST-J\u00c9R\u00d4ME",
     "away": "ROYAL OUTAOUAIS",
     "location": "1-Bauval",
@@ -89,7 +89,7 @@
   },
   "925552": {
     "id": "925552",
-    "date": "2026-11-01",
+    "date": "2026-11-01T21:50:00.000Z",
     "home": "Draveurs Mont-Laurier",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -97,7 +97,7 @@
   },
   "925560": {
     "id": "925560",
-    "date": "2026-11-07",
+    "date": "2026-11-07T21:30:00.000Z",
     "home": "MARQUIS LAVAL",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 3",
@@ -105,7 +105,7 @@
   },
   "925600": {
     "id": "925600",
-    "date": "2026-12-12",
+    "date": "2026-12-12T18:30:00.000Z",
     "home": "CYCLONES M17 AA",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -113,7 +113,7 @@
   },
   "925605": {
     "id": "925605",
-    "date": "2026-12-12",
+    "date": "2026-12-13T01:00:00.000Z",
     "home": "\u00c9LITES LANAUDI\u00c8RE EST",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -121,7 +121,7 @@
   },
   "925615": {
     "id": "925615",
-    "date": "2026-12-19",
+    "date": "2026-12-20T00:00:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "OLYMPIQUES OUTAOUAIS",
     "location": "Slush Puppie",
@@ -129,7 +129,7 @@
   },
   "925619": {
     "id": "925619",
-    "date": "2026-12-20",
+    "date": "2026-12-20T21:45:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "MONTAGNARDS",
     "location": "Kruger",
@@ -137,7 +137,7 @@
   },
   "925633": {
     "id": "925633",
-    "date": "2027-01-09",
+    "date": "2027-01-09T19:45:00.000Z",
     "home": "ARMADA JR AA 2",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -145,7 +145,7 @@
   },
   "925637": {
     "id": "925637",
-    "date": "2027-01-09",
+    "date": "2027-01-10T00:30:00.000Z",
     "home": "CONCORDES MIRABEL-LACHUTE",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -153,7 +153,7 @@
   },
   "925649": {
     "id": "925649",
-    "date": "2027-01-16",
+    "date": "2027-01-16T18:30:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "\u00c9LITES LANAUDI\u00c8RE EST",
     "location": "Glace 1",
@@ -161,7 +161,7 @@
   },
   "925654": {
     "id": "925654",
-    "date": "2027-01-23",
+    "date": "2027-01-23T18:45:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "LIONS ST-J\u00c9R\u00d4ME",
     "location": "Kruger",
@@ -169,7 +169,7 @@
   },
   "925626": {
     "id": "925626",
-    "date": "2027-02-06",
+    "date": "2027-02-06T23:00:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "DRAGONS OUTAOUAIS",
     "location": "Glace 1",
@@ -177,7 +177,7 @@
   },
   "925684": {
     "id": "925684",
-    "date": "2027-02-13",
+    "date": "2027-02-13T23:15:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "CYCLONES M17 AA",
     "location": "Kruger",
@@ -185,7 +185,7 @@
   },
   "925693": {
     "id": "925693",
-    "date": "2027-02-20",
+    "date": "2027-02-20T23:45:00.000Z",
     "home": "BISONS OUTAOUAIS",
     "away": "ROYAL OUTAOUAIS",
     "location": "Desjardins",
@@ -193,7 +193,7 @@
   },
   "925695": {
     "id": "925695",
-    "date": "2027-02-21",
+    "date": "2027-02-21T19:30:00.000Z",
     "home": "DRAGONS OUTAOUAIS",
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
@@ -201,7 +201,7 @@
   },
   "925702": {
     "id": "925702",
-    "date": "2027-02-27",
+    "date": "2027-02-27T23:45:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "Draveurs Mont-Laurier",
     "location": "Kruger",
@@ -209,7 +209,7 @@
   },
   "925703": {
     "id": "925703",
-    "date": "2027-02-28",
+    "date": "2027-02-28T18:45:00.000Z",
     "home": "ROYAL OUTAOUAIS",
     "away": "RIVERAINS LAVAL",
     "location": "Kruger",
