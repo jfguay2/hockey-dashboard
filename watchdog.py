@@ -27,7 +27,6 @@ def fetch_schedule():
                 {"effectiveOffices": [6103]}
             ]
         },
-        # CORRECTION : Retrait de "status" qui causait un bug chez Spordle
         "include": ["surface", "category", "awayTeam", "homeTeam"]
     }
     url = 'https://pub-api.play.spordle.com/api/sp/games?filter=' + urllib.parse.quote(json.dumps(filter_obj))
@@ -45,7 +44,8 @@ def fetch_schedule():
             g_id = str(g.get('id'))
             target_games[g_id] = {
                 'id': g_id,
-                'date': g.get('date'),
+                # CORRECTION ICI: Utiliser 'startTime' au lieu de 'date'
+                'date': g.get('startTime', g.get('date')),
                 'home': home,
                 'away': away,
                 'location': g.get('surface', {}).get('name', 'À déterminer'),
@@ -62,7 +62,7 @@ def format_time(dt_str):
     try:
         dt = datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
         est = pytz.timezone('America/Toronto')
-        return dt.astimezone(est).strftime('%b %d, %Y à %H:%M')
+        return dt.astimezone(est).strftime('%d %b %Y à %H:%M')
     except:
         return dt_str
 
