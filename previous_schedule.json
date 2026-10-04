@@ -151,14 +151,6 @@
     "location": "Glace 1",
     "status": "Active"
   },
-  "925649": {
-    "id": "925649",
-    "date": "2027-01-16T18:30:00.000Z",
-    "home": "ROYAL OUTAOUAIS",
-    "away": "\u00c9LITES LANAUDI\u00c8RE EST",
-    "location": "Glace 1",
-    "status": "Active"
-  },
   "925654": {
     "id": "925654",
     "date": "2027-01-23T18:45:00.000Z",
@@ -174,6 +166,14 @@
     "away": "DRAGONS OUTAOUAIS",
     "location": "Glace 1",
     "status": "Active"
+  },
+  "925649": {
+    "id": "925649",
+    "date": "2027-02-07T16:00:00.000Z",
+    "home": "ROYAL OUTAOUAIS",
+    "away": "\u00c9LITES LANAUDI\u00c8RE EST",
+    "location": "Glace 1",
+    "status": "Conflict"
   },
   "925684": {
     "id": "925684",
