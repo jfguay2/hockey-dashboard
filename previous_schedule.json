@@ -103,6 +103,14 @@
     "location": "Glace 3",
     "status": "Active"
   },
+  "925702": {
+    "id": "925702",
+    "date": "2026-11-29T01:30:00.000Z",
+    "home": "ROYAL OUTAOUAIS",
+    "away": "Draveurs Mont-Laurier",
+    "location": "Slush Puppie",
+    "status": "Active"
+  },
   "925600": {
     "id": "925600",
     "date": "2026-12-12T18:30:00.000Z",
@@ -198,14 +206,6 @@
     "away": "ROYAL OUTAOUAIS",
     "location": "Glace 1",
     "status": "Active"
-  },
-  "925702": {
-    "id": "925702",
-    "date": "2027-02-27T23:45:00.000Z",
-    "home": "ROYAL OUTAOUAIS",
-    "away": "Draveurs Mont-Laurier",
-    "location": "Kruger",
-    "status": "Conflict"
   },
   "925703": {
     "id": "925703",
