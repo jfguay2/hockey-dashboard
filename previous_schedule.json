@@ -461,20 +461,6 @@
     "is_conflict": true,
     "conflict_note": "Conflit d'installation ou de disponibilité signalé dans Spordle (2026-10-15)"
   },
-  "practice_1e9d7c31-7b14-4684-ad21-6a75ddd8ec24": {
-    "id": "practice_1e9d7c31-7b14-4684-ad21-6a75ddd8ec24",
-    "spordle_id": "1e9d7c31-7b14-4684-ad21-6a75ddd8ec24",
-    "type": "practice",
-    "summary": "Pratique: Royal Outaouais M17 AA",
-    "date": "2026-11-08T17:45:00.000Z",
-    "end_date": "2026-11-08T18:45:00.000Z",
-    "home": "ROYAL OUTAOUAIS",
-    "away": null,
-    "location": "Complexe Branchaud-Brière (Kruger)",
-    "status": "Active",
-    "is_conflict": false,
-    "conflict_note": null
-  },
   "practice_21d298ad-4a77-4f68-ab97-1854f82552f2": {
     "id": "practice_21d298ad-4a77-4f68-ab97-1854f82552f2",
     "spordle_id": "21d298ad-4a77-4f68-ab97-1854f82552f2",
@@ -569,6 +555,20 @@
     "home": "ROYAL OUTAOUAIS",
     "away": null,
     "location": "Aréna Stade Pierre Lafontaine (Glace 1)",
+    "status": "Active",
+    "is_conflict": false,
+    "conflict_note": null
+  },
+  "practice_5e76364c-784c-4c2f-aa13-a1779ac68a63": {
+    "id": "practice_5e76364c-784c-4c2f-aa13-a1779ac68a63",
+    "spordle_id": "5e76364c-784c-4c2f-aa13-a1779ac68a63",
+    "type": "practice",
+    "summary": "Pratique: Royal Outaouais M17 AA",
+    "date": "2026-11-09T01:30:00.000Z",
+    "end_date": "2026-11-09T03:00:00.000Z",
+    "home": "ROYAL OUTAOUAIS",
+    "away": null,
+    "location": "Complexe Sportif La Pêche (Glace 1)",
     "status": "Active",
     "is_conflict": false,
     "conflict_note": null

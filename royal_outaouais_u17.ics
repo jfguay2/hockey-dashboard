@@ -156,6 +156,15 @@ UID:practice_30741825-ab9c-4cbe-917a-c8e975b95705@royal-outaouais.lheq
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Événement: Pratique: Royal Outaouais M17 AA\nStatut: Active
+DTEND:20261109T030000Z
+LOCATION:Complexe Sportif La Pêche (Glace 1)
+DTSTART:20261109T013000Z
+STATUS:CONFIRMED
+SUMMARY:Pratique: Royal Outaouais M17 AA
+UID:practice_5e76364c-784c-4c2f-aa13-a1779ac68a63@royal-outaouais.lheq
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Événement: Pratique: Royal Outaouais M17 AA\nStatut: Active
 DTEND:20261024T224500Z
 LOCATION:Complexe Branchaud-Brière (Kruger)
 DTSTART:20261024T211500Z
@@ -171,15 +180,6 @@ DTSTART:20270221T193000Z
 STATUS:CONFIRMED
 SUMMARY:Match: DRAGONS OUTAOUAIS vs ROYAL OUTAOUAIS
 UID:game_925695@royal-outaouais.lheq
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Événement: Pratique: Royal Outaouais M17 AA\nStatut: Active
-DTEND:20261108T184500Z
-LOCATION:Complexe Branchaud-Brière (Kruger)
-DTSTART:20261108T174500Z
-STATUS:CONFIRMED
-SUMMARY:Pratique: Royal Outaouais M17 AA
-UID:practice_1e9d7c31-7b14-4684-ad21-6a75ddd8ec24@royal-outaouais.lheq
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Événement: Match: ROYAL OUTAOUAIS vs RIVERAINS LAVAL\nStatut: Active
