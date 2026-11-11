@@ -317,9 +317,9 @@
     "home": "ROYAL OUTAOUAIS",
     "away": "CYCLONES M17 AA",
     "location": "Complexe Branchaud-Brière (Kruger)",
-    "status": "Active",
-    "is_conflict": false,
-    "conflict_note": null
+    "status": "Conflict",
+    "is_conflict": true,
+    "conflict_note": "Conflit d'horaire officiel signalé dans Spordle"
   },
   "game_925693": {
     "id": "game_925693",
