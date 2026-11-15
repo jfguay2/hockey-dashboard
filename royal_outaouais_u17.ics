@@ -29,12 +29,12 @@ SUMMARY:Pratique: Royal Outaouais M17 AA
 UID:practice_63dde4dd-c091-430e-964b-7496ac21d61b@royal-outaouais.lheq
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Événement: Match: CYCLONES M17 AA vs ROYAL OUTAOUAIS\nStatut: Conflict\nATTENTION CONFLIT (!): Conflit officiel Spordle : deux matchs de ligue programmés le même jour (#3131 à 13h30 vs Cyclones et #3136 à 18h30 vs Élites Lanaudière)
+DESCRIPTION:Événement: Match: CYCLONES vs ROYAL OUTAOUAIS\nStatut: Conflict\nATTENTION CONFLIT (!): Conflit officiel Spordle : deux matchs de ligue programmés le même jour (#3131 à 13h30 vs Cyclones et #3136 à 18h30 vs Élites Lanaudière)
 DTEND:20261212T200000Z
 LOCATION:Aréna Roch-Lasalle (Glace 1)
 DTSTART:20261212T183000Z
 STATUS:TENTATIVE
-SUMMARY:[!] Match: CYCLONES M17 AA vs ROYAL OUTAOUAIS
+SUMMARY:[!] Match: CYCLONES vs ROYAL OUTAOUAIS
 UID:game_925600@royal-outaouais.lheq
 END:VEVENT
 BEGIN:VEVENT
@@ -137,12 +137,12 @@ SUMMARY:Match: ARMADA JR AA 2 vs ROYAL OUTAOUAIS
 UID:game_925633@royal-outaouais.lheq
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Événement: Match: ROYAL OUTAOUAIS vs CYCLONES M17 AA\nStatut: Conflict\nATTENTION CONFLIT (!): Conflit d'horaire officiel signalé dans Spordle
+DESCRIPTION:Événement: Match: ROYAL OUTAOUAIS vs CYCLONES\nStatut: Conflict\nATTENTION CONFLIT (!): Conflit d'horaire officiel signalé dans Spordle
 DTEND:20270214T004500Z
 LOCATION:Complexe Branchaud-Brière (Kruger)
 DTSTART:20270213T231500Z
 STATUS:TENTATIVE
-SUMMARY:[!] Match: ROYAL OUTAOUAIS vs CYCLONES M17 AA
+SUMMARY:[!] Match: ROYAL OUTAOUAIS vs CYCLONES
 UID:game_925684@royal-outaouais.lheq
 END:VEVENT
 BEGIN:VEVENT
