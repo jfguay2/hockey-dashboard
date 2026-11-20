@@ -21,6 +21,15 @@ UID:practice_1b9d89e3-110c-468e-af29-fad45311cb44@royal-outaouais.lheq
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Événement: Pratique: Royal Outaouais M17 AA\nStatut: Active
+DTEND:20261206T223000Z
+LOCATION:Sportium Val-Des-Monts (Glace 1)
+DTSTART:20261206T213000Z
+STATUS:CONFIRMED
+SUMMARY:Pratique: Royal Outaouais M17 AA
+UID:practice_6977068e-ac9b-4c02-bc0f-ff22a1aa874a@royal-outaouais.lheq
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Événement: Pratique: Royal Outaouais M17 AA\nStatut: Active
 DTEND:20270305T020000Z
 LOCATION:Aréna Stade Pierre Lafontaine (Glace 1)
 DTSTART:20270305T010000Z
